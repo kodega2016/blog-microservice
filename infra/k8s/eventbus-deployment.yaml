@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventbus-deployment
+  labels:
+    app: eventbus
+spec:
+  selector:
+    matchLabels:
+      app: eventbus
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: eventbus
+    spec:
+      containers:
+        - name: eventbus
+          image: kodega2016/blogs_eventbus
+          imagePullPolicy: Always
+          env:
+            - name: POST_SERVICE
+              value: posts-clusterip-service
+            - name: COMMENTS_SERVICE
+              value: comments-clusterip-service
+            - name: MODERATION_SERVICE
+              value: moderation-clusterip-service
+            - name: QUERY_SERVICE
+              value: query-clusterip-service
+          ports:
+            - containerPort: 4005
+              name: eventbus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eventbus-clusterip-service
+spec:
+  selector:
+    app: eventbus
+  type: ClusterIP
+  ports:
+    - name: eventbus
+      protocol: TCP
+      port: 4005
+      targetPort: 4005
